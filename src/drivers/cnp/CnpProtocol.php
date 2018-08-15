@@ -45,7 +45,7 @@ class CnpProtocol implements PayProtocol
         $params = $this->prepareParams($params);
 
         $soap = new CNPSoapClient($this->getPaymentGateUrl());
-        $response = $soap->startTransaction($params);
+        $response = $soap->startTransaction(['transaction' => $params]);
 
         return '';
     }
@@ -172,7 +172,15 @@ class CnpProtocol implements PayProtocol
     public function prepareParams($params)
     {
         $accessParams = [
-            'merchantId' => $this->getMerchantId(),
+            'merchantId'            => $this->getMerchantId(),
+            'merchantLocalDateTime' => date('d.m.Y H:i:s'),
+//            'goodsList'             => [
+//                [
+//                    'nameOfGoods'  => 'test',
+//                    'amount'       => 500,
+//                    'currencyCode' => 398,
+//                ],
+//            ],
         ];
         if (!empty($terminalId = $this->getTerminalId())) {
             $accessParams['terminalId'] = $terminalId;
