@@ -42,12 +42,9 @@ class CnpProtocol implements PayProtocol
      */
     public function getPaymentUrl($params)
     {
-        $params = array_merge([
-            'MerchantID' => $this->getMerchantId(),
-            'TerminalId' => $this->getTerminalId(),
-        ], $params);
+        $params = $this->prepareParams($params);
 
-        $soap = new \SoapClient($this->getPaymentGateUrl());
+        $soap = new CNPSoapClient($this->getPaymentGateUrl());
         $response = $soap->startTransaction($params);
 
         return '';
@@ -163,5 +160,24 @@ class CnpProtocol implements PayProtocol
         $this->terminalId = $terminalId;
 
         return $this;
+    }
+
+    /**
+     * Prepare parameters
+     *
+     * @param array $params
+     *
+     * @return array
+     */
+    public function prepareParams($params)
+    {
+        $accessParams = [
+            'merchantId' => $this->getMerchantId(),
+        ];
+        if (!empty($terminalId = $this->getTerminalId())) {
+            $accessParams['terminalId'] = $terminalId;
+        }
+
+        return array_merge($accessParams, $params);
     }
 }

@@ -29,33 +29,27 @@ class CnpProvider extends ServiceProvider
         $this->app->bind(CnpService::class, function ($app) {
             return (new CnpDriver(config('payment.upc')))->setTransport(
                 new CnpProtocol(
-                    config('payment.upc.url'),
-                    config('payment.upc.merchantId'),
-                    config('payment.upc.terminalId'),
-                    config('payment.upc.pathToOurKey'),
-                    config('payment.upc.pathToTheirKey')
+                    config('payment.cnp.url'),
+                    config('payment.cnp.merchantId'),
+                    config('payment.cnp.terminalId')
                 )
             );
         });
         $this->app->bind(PayService::class, function ($app) {
             return (new CnpDriver(config('payment.upc')))->setTransport(
                 new CnpProtocol(
-                    config('payment.upc.url'),
-                    config('payment.upc.merchantId'),
-                    config('payment.upc.terminalId'),
-                    config('payment.upc.pathToOurKey'),
-                    config('payment.upc.pathToTheirKey')
+                    config('payment.cnp.url'),
+                    config('payment.cnp.merchantId'),
+                    config('payment.cnp.terminalId')
                 )
             );
         });
         $this->app->bind(CnpDriver::class, function ($app) {
             return (new CnpDriver(config('payment.upc')))->setTransport(
                 new CnpProtocol(
-                    config('payment.upc.url'),
-                    config('payment.upc.merchantId'),
-                    config('payment.upc.terminalId'),
-                    config('payment.upc.pathToOurKey'),
-                    config('payment.upc.pathToTheirKey')
+                    config('payment.cnp.url'),
+                    config('payment.cnp.merchantId'),
+                    config('payment.cnp.terminalId')
                 )
             );
         });
