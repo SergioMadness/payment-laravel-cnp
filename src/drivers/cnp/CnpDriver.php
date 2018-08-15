@@ -209,7 +209,7 @@ class CnpDriver implements PayService, CnpService
      */
     public function getProvider()
     {
-        return 'tinkoff';
+        return self::PAYMENT_CNP;
     }
 
     /**
@@ -322,5 +322,46 @@ class CnpDriver implements PayService, CnpService
     public function getPaymentId()
     {
         return $this->getResponseParam('SD');
+    }
+
+    /**
+     * Payment system need form
+     * You can not get url for redirect
+     *
+     * @return bool
+     */
+    public function needForm()
+    {
+        // TODO: Implement needForm() method.
+    }
+
+    /**
+     * Generate payment form
+     *
+     * @param int       $orderId
+     * @param int       $paymentId
+     * @param float     $amount
+     * @param string    $currency
+     * @param string    $paymentType
+     * @param string    $successReturnUrl
+     * @param string    $failReturnUrl
+     * @param string    $description
+     * @param array     $extraParams
+     * @param Arrayable $receipt
+     *
+     * @return string
+     */
+    public function getPaymentForm($orderId,
+                                   $paymentId,
+                                   $amount,
+                                   $currency = self::CURRENCY_RUR,
+                                   $paymentType = self::PAYMENT_TYPE_CARD,
+                                   $successReturnUrl = '',
+                                   $failReturnUrl = '',
+                                   $description = '',
+                                   $extraParams = [],
+                                   $receipt = null)
+    {
+        // TODO: Implement getPaymentForm() method.
     }
 }
