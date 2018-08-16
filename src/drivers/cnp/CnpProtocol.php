@@ -1,12 +1,13 @@
 <?php namespace professionalweb\payment\drivers\cnp;
 
 use professionalweb\payment\contracts\PayProtocol;
+use professionalweb\payment\interfaces\CnpProtocol as ICnpProtocol;
 
 /**
  * Wrapper for CNP protocol
  * @package professionalweb\payment\drivers\cnp
  */
-class CnpProtocol implements PayProtocol
+class CnpProtocol implements PayProtocol, ICnpProtocol
 {
     /**
      * Current payment URL
@@ -44,10 +45,19 @@ class CnpProtocol implements PayProtocol
     {
         $params = $this->prepareParams($params);
 
-        $soap = new CNPSoapClient($this->getPaymentGateUrl());
-        $response = $soap->startTransaction(['transaction' => $params]);
+        $response = $this->getClient()->startTransaction(['transaction' => $params]);
 
-        return '';
+        return $response !== null && isset($response->return) && isset($response->return->redirectURL) ? $response->return->redirectURL : '';
+    }
+
+    /**
+     * Create SOAP client
+     *
+     * @return CNPSoapClient
+     */
+    protected function getClient()
+    {
+        return new CNPSoapClient($this->getPaymentGateUrl());
     }
 
     /**
@@ -174,18 +184,46 @@ class CnpProtocol implements PayProtocol
         $accessParams = [
             'merchantId'            => $this->getMerchantId(),
             'merchantLocalDateTime' => date('d.m.Y H:i:s'),
-//            'goodsList'             => [
-//                [
-//                    'nameOfGoods'  => 'test',
-//                    'amount'       => 500,
-//                    'currencyCode' => 398,
-//                ],
-//            ],
         ];
         if (!empty($terminalId = $this->getTerminalId())) {
             $accessParams['terminalId'] = $terminalId;
         }
 
         return array_merge($accessParams, $params);
+    }
+
+    /**
+     * Get transaction status
+     *
+     * @param string $id
+     *
+     * @return string
+     */
+    public function getTransactionStatus($id)
+    {
+        $response = $this->getClient()->getTransactionStatusCode([
+            'merchantId'  => $this->getMerchantId(),
+            'referenceNr' => $id,
+        ]);
+
+        return $response;
+    }
+
+    /**
+     * Approve transaction by id
+     *
+     * @param string $id
+     *
+     * @return bool
+     */
+    public function approveTransaction($id)
+    {
+        $response = $this->getClient()->completeTransaction([
+            'merchantId'         => $this->getMerchantId(),
+            'referenceNr'        => $id,
+            'transactionSuccess' => true,
+        ]);
+
+        return $response;
     }
 }

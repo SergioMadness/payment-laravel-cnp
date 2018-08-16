@@ -1,8 +1,10 @@
 <?php namespace professionalweb\payment\drivers\cnp;
 
+use professionalweb\payment\Form;
 use Illuminate\Contracts\Support\Arrayable;
 use professionalweb\payment\contracts\PayService;
 use professionalweb\payment\contracts\PayProtocol;
+use professionalweb\payment\interfaces\CnpProtocol;
 use professionalweb\payment\interfaces\CnpService;
 
 /**
@@ -14,7 +16,7 @@ class CnpDriver implements PayService, CnpService
     /**
      * CNP protocol object
      *
-     * @var PayProtocol
+     * @var CnpProtocol
      */
     private $transport;
 
@@ -68,12 +70,23 @@ class CnpDriver implements PayService, CnpService
             'orderId'                           => $orderId,
             'currencyCode'                      => $currency,
             'totalAmount'                       => $amount * 100,
-            'Description'                       => $description,
+            'description'                       => $description,
             'merchantAdditionalInformationList' => $extraParams,
             'returnURL'                         => $successReturnUrl,
         ];
         if (isset($extraParams['locale'])) {
             $params['languageCode'] = $extraParams['locale'];
+        }
+        if (isset($extraParams['products'])) {
+            $params['goodsList'] = [];
+            foreach ($extraParams['products'] as $product) {
+                $params['goodsList'][] = [
+                    'merchantsGoodsID' => isset($product['id']) ? $product['id'] : '',
+                    'nameOfGoods'      => isset($product['name']) ? $product['name'] : '',
+                    'amount'           => isset($product['price']) ? $product['price'] * 100 : 0,
+                    'currencyCode'     => $currency,
+                ];
+            }
         }
 
         return $this->getTransport()->getPaymentUrl($params);
@@ -251,7 +264,7 @@ class CnpDriver implements PayService, CnpService
     /**
      * Get transport
      *
-     * @return PayProtocol
+     * @return CnpProtocol
      */
     public function getTransport()
     {
@@ -311,7 +324,7 @@ class CnpDriver implements PayService, CnpService
      */
     public function getName()
     {
-        return 'cnp';
+        return self::PAYMENT_CNP;
     }
 
     /**
@@ -332,7 +345,7 @@ class CnpDriver implements PayService, CnpService
      */
     public function needForm()
     {
-        // TODO: Implement needForm() method.
+        return false;
     }
 
     /**
@@ -362,6 +375,35 @@ class CnpDriver implements PayService, CnpService
                                    $extraParams = [],
                                    $receipt = null)
     {
-        // TODO: Implement getPaymentForm() method.
+        return new Form();
+    }
+
+    /**
+     * Approve transaction by id
+     *
+     * @param string $id
+     *
+     * @return bool
+     */
+    public function approveTransaction($id)
+    {
+        $status = $this->getTransactionStatus($id);
+        if ($status === 'PAID' || $status === 'AUTHORISED') {
+            return $this->getTransport()->approveTransaction($id);
+        }
+
+        return false;
+    }
+
+    /**
+     * Get transaction status
+     *
+     * @param string $id
+     *
+     * @return string
+     */
+    public function getTransactionStatus($id)
+    {
+        return $this->getTransport()->getTransactionStatus($id);
     }
 }
