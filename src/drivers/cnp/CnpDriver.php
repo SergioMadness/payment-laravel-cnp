@@ -4,14 +4,15 @@ use professionalweb\payment\Form;
 use Illuminate\Contracts\Support\Arrayable;
 use professionalweb\payment\contracts\PayService;
 use professionalweb\payment\contracts\PayProtocol;
-use professionalweb\payment\interfaces\CnpProtocol;
 use professionalweb\payment\interfaces\CnpService;
+use professionalweb\payment\interfaces\CnpProtocol;
+use professionalweb\payment\contracts\PaymentApprove;
 
 /**
  * Payment service. Pay, Check, etc
  * @package professionalweb\payment\drivers\cnp
  */
-class CnpDriver implements PayService, CnpService
+class CnpDriver implements PayService, CnpService, PaymentApprove
 {
     /**
      * CNP protocol object
