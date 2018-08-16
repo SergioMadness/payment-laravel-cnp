@@ -26,6 +26,11 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
      */
     private $terminalId;
 
+    /**
+     * @var string
+     */
+    private $lastInvoiceId;
+
     public function __construct($url = '', $merchantId = '', $terminalId = '')
     {
         $this
@@ -44,10 +49,16 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
     public function getPaymentUrl($params)
     {
         $params = $this->prepareParams($params);
-
+        $this->lastInvoiceId = '';
         $response = $this->getClient()->startTransaction(['transaction' => $params]);
 
-        return $response !== null && isset($response->return) && isset($response->return->redirectURL) ? $response->return->redirectURL : '';
+        if ($response !== null && isset($response->return) && isset($response->return->redirectURL)) {
+            $this->lastInvoiceId = $response->return->customerReference;
+
+            return $response->return->redirectURL;
+        }
+
+        return '';
     }
 
     /**
@@ -79,7 +90,7 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
      */
     public function getPaymentId()
     {
-        // TODO: Implement getPaymentId() method.
+        return $this->lastInvoiceId;
     }
 
     /**
@@ -206,7 +217,8 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
             'referenceNr' => $id,
         ]);
 
-        return $response;
+        return $response !== null && isset($response->return) && isset($response->return->transactionStatus) ?
+            $response->return->transactionStatus : '';
     }
 
     /**

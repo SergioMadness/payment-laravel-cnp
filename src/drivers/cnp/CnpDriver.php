@@ -163,7 +163,7 @@ class CnpDriver implements PayService, CnpService, PaymentApprove
      */
     public function getOrderId()
     {
-        return $this->getResponseParam('OrderID');
+        return '';
     }
 
     /**
@@ -193,7 +193,8 @@ class CnpDriver implements PayService, CnpService, PaymentApprove
      */
     public function getTransactionId()
     {
-        return $this->getResponseParam('Rrn');
+        return $this->getTransport()->getPaymentId();
+        //$this->getResponseParam('Rrn');
     }
 
     /**
@@ -203,7 +204,7 @@ class CnpDriver implements PayService, CnpService, PaymentApprove
      */
     public function getAmount()
     {
-        return $this->getResponseParam('TotalAmount');
+        return '';
     }
 
     /**
@@ -213,7 +214,7 @@ class CnpDriver implements PayService, CnpService, PaymentApprove
      */
     public function getErrorCode()
     {
-        return (int)$this->getResponseParam('TranCode', 0);
+        return '';
     }
 
     /**
@@ -233,7 +234,7 @@ class CnpDriver implements PayService, CnpService, PaymentApprove
      */
     public function getPan()
     {
-        return $this->getResponseParam('ProxyPan');
+        return '';
     }
 
     /**
@@ -335,7 +336,7 @@ class CnpDriver implements PayService, CnpService, PaymentApprove
      */
     public function getPaymentId()
     {
-        return $this->getResponseParam('SD');
+        return $this->getTransport()->getPaymentId();
     }
 
     /**
