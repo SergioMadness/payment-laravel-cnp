@@ -64,11 +64,21 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
     /**
      * Create SOAP client
      *
-     * @return CNPSoapClient
+     * @return \SoapClient
      */
     protected function getClient()
     {
-        return new CNPSoapClient($this->getPaymentGateUrl());
+        $location = str_replace('?wsdl', '', $this->getPaymentGateUrl());
+
+        return new \SoapClient($this->getPaymentGateUrl(), [
+            'connection_timeout' => 60,
+            'cache_wsdl'         => WSDL_CACHE_MEMORY,
+            'trace'              => 1,
+            'soap_version'       => 'SOAP 1.2',
+            'encoding'           => 'UTF-8',
+            'exceptions'         => true,
+            'location'           => $location,
+        ]);
     }
 
     /**

@@ -390,7 +390,7 @@ class CnpDriver implements PayService, CnpService, PaymentApprove
     public function approveTransaction($id)
     {
         $status = $this->getTransactionStatus($id);
-        if ($status === 'PAID' || $status === 'AUTHORISED') {
+        if ($status === 'AUTHORISED') {
             return $this->getTransport()->approveTransaction($id);
         }
 
