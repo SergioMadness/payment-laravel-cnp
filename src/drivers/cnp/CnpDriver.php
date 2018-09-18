@@ -1,20 +1,23 @@
 <?php namespace professionalweb\payment\drivers\cnp;
 
+use professionalweb\payment\Form;
 use Illuminate\Contracts\Support\Arrayable;
 use professionalweb\payment\contracts\PayService;
 use professionalweb\payment\contracts\PayProtocol;
 use professionalweb\payment\interfaces\CnpService;
+use professionalweb\payment\interfaces\CnpProtocol;
+use professionalweb\payment\contracts\PaymentApprove;
 
 /**
  * Payment service. Pay, Check, etc
  * @package professionalweb\payment\drivers\cnp
  */
-class CnpDriver implements PayService, CnpService
+class CnpDriver implements PayService, CnpService, PaymentApprove
 {
     /**
      * CNP protocol object
      *
-     * @var PayProtocol
+     * @var CnpProtocol
      */
     private $transport;
 
@@ -68,12 +71,23 @@ class CnpDriver implements PayService, CnpService
             'orderId'                           => $orderId,
             'currencyCode'                      => $currency,
             'totalAmount'                       => $amount * 100,
-            'Description'                       => $description,
+            'description'                       => $description,
             'merchantAdditionalInformationList' => $extraParams,
             'returnURL'                         => $successReturnUrl,
         ];
         if (isset($extraParams['locale'])) {
             $params['languageCode'] = $extraParams['locale'];
+        }
+        if (isset($extraParams['products'])) {
+            $params['goodsList'] = [];
+            foreach ($extraParams['products'] as $product) {
+                $params['goodsList'][] = [
+                    'merchantsGoodsID' => isset($product['id']) ? $product['id'] : '',
+                    'nameOfGoods'      => isset($product['name']) ? $product['name'] : '',
+                    'amount'           => isset($product['price']) ? $product['price'] * 100 : 0,
+                    'currencyCode'     => $currency,
+                ];
+            }
         }
 
         return $this->getTransport()->getPaymentUrl($params);
@@ -149,7 +163,7 @@ class CnpDriver implements PayService, CnpService
      */
     public function getOrderId()
     {
-        return $this->getResponseParam('OrderID');
+        return '';
     }
 
     /**
@@ -179,7 +193,8 @@ class CnpDriver implements PayService, CnpService
      */
     public function getTransactionId()
     {
-        return $this->getResponseParam('Rrn');
+        return $this->getTransport()->getPaymentId();
+        //$this->getResponseParam('Rrn');
     }
 
     /**
@@ -189,7 +204,7 @@ class CnpDriver implements PayService, CnpService
      */
     public function getAmount()
     {
-        return $this->getResponseParam('TotalAmount');
+        return '';
     }
 
     /**
@@ -199,7 +214,7 @@ class CnpDriver implements PayService, CnpService
      */
     public function getErrorCode()
     {
-        return (int)$this->getResponseParam('TranCode', 0);
+        return '';
     }
 
     /**
@@ -209,7 +224,7 @@ class CnpDriver implements PayService, CnpService
      */
     public function getProvider()
     {
-        return 'tinkoff';
+        return self::PAYMENT_CNP;
     }
 
     /**
@@ -219,7 +234,7 @@ class CnpDriver implements PayService, CnpService
      */
     public function getPan()
     {
-        return $this->getResponseParam('ProxyPan');
+        return '';
     }
 
     /**
@@ -251,7 +266,7 @@ class CnpDriver implements PayService, CnpService
     /**
      * Get transport
      *
-     * @return PayProtocol
+     * @return CnpProtocol
      */
     public function getTransport()
     {
@@ -311,7 +326,7 @@ class CnpDriver implements PayService, CnpService
      */
     public function getName()
     {
-        return 'cnp';
+        return self::PAYMENT_CNP;
     }
 
     /**
@@ -321,6 +336,76 @@ class CnpDriver implements PayService, CnpService
      */
     public function getPaymentId()
     {
-        return $this->getResponseParam('SD');
+        return $this->getTransport()->getPaymentId();
+    }
+
+    /**
+     * Payment system need form
+     * You can not get url for redirect
+     *
+     * @return bool
+     */
+    public function needForm()
+    {
+        return false;
+    }
+
+    /**
+     * Generate payment form
+     *
+     * @param int       $orderId
+     * @param int       $paymentId
+     * @param float     $amount
+     * @param string    $currency
+     * @param string    $paymentType
+     * @param string    $successReturnUrl
+     * @param string    $failReturnUrl
+     * @param string    $description
+     * @param array     $extraParams
+     * @param Arrayable $receipt
+     *
+     * @return string
+     */
+    public function getPaymentForm($orderId,
+                                   $paymentId,
+                                   $amount,
+                                   $currency = self::CURRENCY_RUR,
+                                   $paymentType = self::PAYMENT_TYPE_CARD,
+                                   $successReturnUrl = '',
+                                   $failReturnUrl = '',
+                                   $description = '',
+                                   $extraParams = [],
+                                   $receipt = null)
+    {
+        return new Form();
+    }
+
+    /**
+     * Approve transaction by id
+     *
+     * @param string $id
+     *
+     * @return bool
+     */
+    public function approveTransaction($id)
+    {
+        $status = $this->getTransactionStatus($id);
+        if ($status === 'AUTHORISED') {
+            return $this->getTransport()->approveTransaction($id);
+        }
+
+        return false;
+    }
+
+    /**
+     * Get transaction status
+     *
+     * @param string $id
+     *
+     * @return string
+     */
+    public function getTransactionStatus($id)
+    {
+        return $this->getTransport()->getTransactionStatus($id);
     }
 }

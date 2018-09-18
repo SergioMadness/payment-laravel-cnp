@@ -23,18 +23,13 @@
   ],
   "support": {
     "email": "info@web-development.pw",
-    "issues": "https://github.com/SergioMadness/payonline/issues",
-    "wiki": "https://github.com/SergioMadness/payonline/wiki",
-    "source": "https://github.com/SergioMadness/payonline/releases"
+    "issues": "https://github.com/SergioMadness/payment-laravel-cnp/issues",
+    "wiki": "https://github.com/SergioMadness/payment-laravel-cnp/wiki",
+    "source": "https://github.com/SergioMadness/payment-laravel-cnp/releases"
   },
   "require": {
-    "illuminate/support": "5.2.* || 5.3.* || 5.4.* || 5.5.*",
-    "professionalweb/payment-laravel": "dev-devide-drivers"
-  },
-  "require-dev": {
-    "codeception/codeception": "*",
-    "satooshi/php-coveralls": "*",
-    "codeclimate/php-test-reporter": "*"
+    "illuminate/support": "5.*",
+    "professionalweb/payment-laravel": "^3.0"
   },
   "config": {
     "process-timeout": 1800

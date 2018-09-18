@@ -1,12 +1,13 @@
 <?php namespace professionalweb\payment\drivers\cnp;
 
 use professionalweb\payment\contracts\PayProtocol;
+use professionalweb\payment\interfaces\CnpProtocol as ICnpProtocol;
 
 /**
  * Wrapper for CNP protocol
  * @package professionalweb\payment\drivers\cnp
  */
-class CnpProtocol implements PayProtocol
+class CnpProtocol implements PayProtocol, ICnpProtocol
 {
     /**
      * Current payment URL
@@ -25,6 +26,11 @@ class CnpProtocol implements PayProtocol
      */
     private $terminalId;
 
+    /**
+     * @var string
+     */
+    private $lastInvoiceId;
+
     public function __construct($url = '', $merchantId = '', $terminalId = '')
     {
         $this
@@ -42,15 +48,37 @@ class CnpProtocol implements PayProtocol
      */
     public function getPaymentUrl($params)
     {
-        $params = array_merge([
-            'MerchantID' => $this->getMerchantId(),
-            'TerminalId' => $this->getTerminalId(),
-        ], $params);
+        $params = $this->prepareParams($params);
+        $this->lastInvoiceId = '';
+        $response = $this->getClient()->startTransaction(['transaction' => $params]);
 
-        $soap = new \SoapClient($this->getPaymentGateUrl());
-        $response = $soap->startTransaction($params);
+        if ($response !== null && isset($response->return) && isset($response->return->redirectURL)) {
+            $this->lastInvoiceId = $response->return->customerReference;
+
+            return $response->return->redirectURL;
+        }
 
         return '';
+    }
+
+    /**
+     * Create SOAP client
+     *
+     * @return \SoapClient
+     */
+    protected function getClient()
+    {
+        $location = str_replace('?wsdl', '', $this->getPaymentGateUrl());
+
+        return new \SoapClient($this->getPaymentGateUrl(), [
+            'connection_timeout' => 60,
+            'cache_wsdl'         => WSDL_CACHE_MEMORY,
+            'trace'              => 1,
+            'soap_version'       => 'SOAP 1.2',
+            'encoding'           => 'UTF-8',
+            'exceptions'         => true,
+            'location'           => $location,
+        ]);
     }
 
     /**
@@ -72,7 +100,7 @@ class CnpProtocol implements PayProtocol
      */
     public function getPaymentId()
     {
-        // TODO: Implement getPaymentId() method.
+        return $this->lastInvoiceId;
     }
 
     /**
@@ -163,5 +191,61 @@ class CnpProtocol implements PayProtocol
         $this->terminalId = $terminalId;
 
         return $this;
+    }
+
+    /**
+     * Prepare parameters
+     *
+     * @param array $params
+     *
+     * @return array
+     */
+    public function prepareParams($params)
+    {
+        $accessParams = [
+            'merchantId'            => $this->getMerchantId(),
+            'merchantLocalDateTime' => date('d.m.Y H:i:s'),
+        ];
+        if (!empty($terminalId = $this->getTerminalId())) {
+            $accessParams['terminalId'] = $terminalId;
+        }
+
+        return array_merge($accessParams, $params);
+    }
+
+    /**
+     * Get transaction status
+     *
+     * @param string $id
+     *
+     * @return string
+     */
+    public function getTransactionStatus($id)
+    {
+        $response = $this->getClient()->getTransactionStatusCode([
+            'merchantId'  => $this->getMerchantId(),
+            'referenceNr' => $id,
+        ]);
+
+        return $response !== null && isset($response->return) && isset($response->return->transactionStatus) ?
+            $response->return->transactionStatus : '';
+    }
+
+    /**
+     * Approve transaction by id
+     *
+     * @param string $id
+     *
+     * @return bool
+     */
+    public function approveTransaction($id)
+    {
+        $response = $this->getClient()->completeTransaction([
+            'merchantId'         => $this->getMerchantId(),
+            'referenceNr'        => $id,
+            'transactionSuccess' => true,
+        ]);
+
+        return $response;
     }
 }
