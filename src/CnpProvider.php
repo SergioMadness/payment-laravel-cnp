@@ -14,7 +14,7 @@ use professionalweb\payment\contracts\PaymentFacade;
 class CnpProvider extends ServiceProvider
 {
 
-    public function boot()
+    public function boot(): void
     {
         app(PaymentFacade::class)->registerDriver(CnpService::PAYMENT_CNP, CnpService::class);
     }
@@ -24,7 +24,7 @@ class CnpProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->app->bind(CnpService::class, function ($app) {
             return (new CnpDriver(config('payment.upc')))->setTransport(

@@ -29,7 +29,7 @@
   },
   "require": {
     "illuminate/support": "5.*",
-    "professionalweb/payment-laravel": "^3.0"
+    "professionalweb/payment-laravel": "^4.0"
   },
   "config": {
     "process-timeout": 1800
@@ -37,6 +37,13 @@
   "autoload": {
     "psr-4": {
       "professionalweb\\payment\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "professionalweb\\payment\\CnpProvider"
+      ]
     }
   }
 }
