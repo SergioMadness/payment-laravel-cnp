@@ -27,38 +27,38 @@ class CnpProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(CnpService::class, function ($app) {
-            return (new CnpDriver(config('payment.upc')))->setTransport(
+            return (new CnpDriver(config('payment.upc', [])))->setTransport(
                 new CnpProtocol(
-                    config('payment.cnp.url'),
-                    config('payment.cnp.merchantId'),
-                    config('payment.cnp.terminalId')
+                    config('payment.cnp.url', ''),
+                    config('payment.cnp.merchantId', ''),
+                    config('payment.cnp.terminalId', '')
                 )
             );
         });
         $this->app->bind(CnpService::class, function ($app) {
-            return (new CnpDriver(config('payment.upc')))->setTransport(
+            return (new CnpDriver(config('payment.upc', [])))->setTransport(
                 new CnpProtocol(
-                    config('payment.cnp.url'),
-                    config('payment.cnp.merchantId'),
-                    config('payment.cnp.terminalId')
+                    config('payment.cnp.url', ''),
+                    config('payment.cnp.merchantId', ''),
+                    config('payment.cnp.terminalId', '')
                 )
             );
         });
         $this->app->bind(PayService::class, function ($app) {
-            return (new CnpDriver(config('payment.upc')))->setTransport(
+            return (new CnpDriver(config('payment.upc', [])))->setTransport(
                 new CnpProtocol(
-                    config('payment.cnp.url'),
-                    config('payment.cnp.merchantId'),
-                    config('payment.cnp.terminalId')
+                    config('payment.cnp.url', ''),
+                    config('payment.cnp.merchantId', ''),
+                    config('payment.cnp.terminalId', '')
                 )
             );
         });
         $this->app->bind(CnpDriver::class, function ($app) {
-            return (new CnpDriver(config('payment.upc')))->setTransport(
+            return (new CnpDriver(config('payment.upc', [])))->setTransport(
                 new CnpProtocol(
-                    config('payment.cnp.url'),
-                    config('payment.cnp.merchantId'),
-                    config('payment.cnp.terminalId')
+                    config('payment.cnp.url', ''),
+                    config('payment.cnp.merchantId', ''),
+                    config('payment.cnp.terminalId', '')
                 )
             );
         });
