@@ -24,7 +24,7 @@ composer require professionalweb/payment-laravel-cnp "^2.0"
 Alternatively you can add the following to the `require` section in your `composer.json` manually:
 
 ```json
-"professionalweb/payment-laravel-yandex": "^2.0"
+"professionalweb/payment-laravel-cnp": "^2.0"
 ```
 Run `composer update` afterwards.
 
