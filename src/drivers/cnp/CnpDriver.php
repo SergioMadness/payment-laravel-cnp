@@ -68,12 +68,11 @@ class CnpDriver implements PayService, CnpService, PaymentApprove
                                    $receipt = null)
     {
         $params = [
-            'orderId'                           => $orderId,
-            'currencyCode'                      => $currency,
-            'totalAmount'                       => $amount * 100,
-            'description'                       => $description,
-            'merchantAdditionalInformationList' => $extraParams,
-            'returnURL'                         => $successReturnUrl,
+            'orderId'      => $orderId,
+            'currencyCode' => $currency,
+            'totalAmount'  => $amount * 100,
+            'description'  => $description,
+            'returnURL'    => $successReturnUrl,
         ];
         if (isset($extraParams['locale'])) {
             $params['languageCode'] = $extraParams['locale'];
@@ -86,6 +85,17 @@ class CnpDriver implements PayService, CnpService, PaymentApprove
                     'nameOfGoods'      => isset($product['name']) ? $product['name'] : '',
                     'amount'           => isset($product['price']) ? $product['price'] * 100 : 0,
                     'currencyCode'     => $currency,
+                ];
+            }
+            unset($extraParams['products']);
+        }
+
+        if (!empty($extraParams)) {
+            $params['merchantAdditionalInformationList'] = [];
+            foreach ($extraParams as $key => $value) {
+                $params['merchantAdditionalInformationList'][] = [
+                    'Key'   => $key,
+                    'Value' => (string)$value,
                 ];
             }
         }
