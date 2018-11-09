@@ -404,7 +404,7 @@ class CnpDriver implements PayService, CnpService, PaymentApprove
             return $this->getTransport()->approveTransaction($id);
         }
 
-        return false;
+        return $status === 'PAID';
     }
 
     /**
