@@ -46,13 +46,13 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
      *
      * @return string
      */
-    public function getPaymentUrl($params)
+    public function getPaymentUrl(array $params): string
     {
         $params = $this->prepareParams($params);
         $this->lastInvoiceId = '';
         $response = $this->getClient()->startTransaction(['transaction' => $params]);
 
-        if ($response !== null && isset($response->return) && isset($response->return->redirectURL)) {
+        if (isset($response->return, $response->return->redirectURL) && $response !== null) {
             $this->lastInvoiceId = $response->return->customerReference;
 
             return $response->return->redirectURL;
@@ -66,7 +66,7 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
      *
      * @return \SoapClient
      */
-    protected function getClient()
+    protected function getClient(): \SoapClient
     {
         $location = str_replace('?wsdl', '', $this->getPaymentGateUrl());
 
@@ -88,7 +88,7 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
      *
      * @return bool
      */
-    public function validate($params)
+    public function validate(array $params): bool
     {
         return true;
     }
@@ -98,7 +98,7 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
      *
      * @return mixed
      */
-    public function getPaymentId()
+    public function getPaymentId(): string
     {
         return $this->lastInvoiceId;
     }
@@ -111,9 +111,9 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
      *
      * @return string
      */
-    public function getNotificationResponse($requestData, $errorCode)
+    public function getNotificationResponse($requestData, $errorCode): string
     {
-        return response('');
+        return '';
     }
 
     /**
@@ -124,7 +124,7 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
      *
      * @return string
      */
-    public function getCheckResponse($requestData, $errorCode)
+    public function getCheckResponse($requestData, $errorCode): string
     {
         return $this->getNotificationResponse($requestData, $errorCode);
     }
@@ -136,7 +136,7 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
      *
      * @return $this
      */
-    public function setPaymentUrl($url)
+    public function setPaymentUrl(?string $url): self
     {
         $this->paymentUrl = $url;
 
@@ -148,7 +148,7 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
      *
      * @return string
      */
-    public function getPaymentGateUrl()
+    public function getPaymentGateUrl(): string
     {
         return $this->paymentUrl;
     }
@@ -156,7 +156,7 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
     /**
      * @return string
      */
-    public function getMerchantId()
+    public function getMerchantId(): string
     {
         return $this->merchantId;
     }
@@ -166,7 +166,7 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
      *
      * @return $this
      */
-    public function setMerchantId($merchantId)
+    public function setMerchantId(?string $merchantId): self
     {
         $this->merchantId = $merchantId;
 
@@ -176,7 +176,7 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
     /**
      * @return string
      */
-    public function getTerminalId()
+    public function getTerminalId(): string
     {
         return $this->terminalId;
     }
@@ -186,7 +186,7 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
      *
      * @return $this
      */
-    public function setTerminalId($terminalId)
+    public function setTerminalId(?string $terminalId): self
     {
         $this->terminalId = $terminalId;
 
@@ -200,7 +200,7 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
      *
      * @return array
      */
-    public function prepareParams($params)
+    public function prepareParams(array $params): array
     {
         $accessParams = [
             'merchantId'            => $this->getMerchantId(),
@@ -220,14 +220,14 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
      *
      * @return string
      */
-    public function getTransactionStatus($id)
+    public function getTransactionStatus(string $id): string
     {
         $response = $this->getClient()->getTransactionStatusCode([
             'merchantId'  => $this->getMerchantId(),
             'referenceNr' => $id,
         ]);
 
-        return $response !== null && isset($response->return) && isset($response->return->transactionStatus) ?
+        return isset($response->return, $response->return->transactionStatus) && $response !== null ?
             $response->return->transactionStatus : '';
     }
 
@@ -238,7 +238,7 @@ class CnpProtocol implements PayProtocol, ICnpProtocol
      *
      * @return bool
      */
-    public function approveTransaction($id)
+    public function approveTransaction(string $id): bool
     {
         $response = $this->getClient()->completeTransaction([
             'merchantId'         => $this->getMerchantId(),

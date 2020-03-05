@@ -15,7 +15,7 @@ interface CnpProtocol extends PayProtocol
      *
      * @return string
      */
-    public function getTransactionStatus($id);
+    public function getTransactionStatus(string $id): string;
 
     /**
      * Approve transaction by id
@@ -24,5 +24,5 @@ interface CnpProtocol extends PayProtocol
      *
      * @return bool
      */
-    public function approveTransaction($id);
+    public function approveTransaction(string $id): bool;
 }

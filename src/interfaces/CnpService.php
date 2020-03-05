@@ -6,5 +6,5 @@
  */
 interface CnpService
 {
-    const PAYMENT_CNP = 'cnp';
+    public const PAYMENT_CNP = 'cnp';
 }
